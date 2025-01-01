@@ -1,0 +1,72 @@
+Switch>ena
+
+Switch#conf t
+
+Switch(config)#ho K-ENG-SW
+
+K-ENG-SW(config)#vlan 60
+K-ENG-SW(config-vlan)#name KLAN
+
+K-ENG-SW(config-vlan)#vlan 90
+K-ENG-SW(config-vlan)#name KWLAN
+
+K-ENG-SW(config-vlan)#vlan 199
+K-ENG-SW(config-vlan)#name BLACKHOLE
+K-ENG-SW(config-vlan)#exit
+
+K-ENG-SW(config)#int range fa0/1-2
+K-ENG-SW(config-if-range)#switchport mode trunk
+K-ENG-SW(config-if-range)#exit
+
+K-ENG-SW(config)#int range fa0/3-20
+K-ENG-SW(config-if-range)#switchport mode access 
+K-ENG-SW(config-if-range)#switchport access vlan 60
+K-ENG-SW(config-if-range)#exit
+
+K-ENG-SW(config)#int range fa0/21-24
+K-ENG-SW(config-if-range)#switchport mode access 
+K-ENG-SW(config-if-range)#switchport access vlan 90
+K-ENG-SW(config-if-range)#exit
+
+K-ENG-SW(config)#int range gig 0/1-2
+K-ENG-SW(config-if-range)#switchport mode access 
+K-ENG-SW(config-if-range)#switchport access vlan 199
+K-ENG-SW(config-if-range)#shut
+K-ENG-SW(config-if-range)#exit
+
+K-ENG-SW(config)#int range fa0/3-24
+K-ENG-SW(config-if-range)#spanning-tree portfast
+K-ENG-SW(config-if-range)#spanning-tree bpduguard enable 
+K-ENG-SW(config-if-range)#exit
+
+K-ENG-SW(config)#enable secret Admin
+K-ENG-SW(config)#
+K-ENG-SW(config)#line console 0
+K-ENG-SW(config-line)#password Admin
+K-ENG-SW(config-line)#exec-timeout 15
+K-ENG-SW(config-line)#login
+K-ENG-SW(config-line)#exit
+K-ENG-SW(config)#
+K-ENG-SW(config)#username Admin secret Admin
+K-ENG-SW(config)#ip domain-name cisco.lk
+K-ENG-SW(config)#crypto key generate rsa
+The name for the keys will be: K-ENG-SW.cisco.lk
+Choose the size of the key modulus in the range of 360 to 4096 for your
+  General Purpose Keys. Choosing a key modulus greater than 512 may take
+  a few minutes.
+
+How many bits in the modulus [512]: 1024
+% Generating 1024 bit RSA keys, keys will be non-exportable...[OK]
+
+K-ENG-SW(config)#ip ssh version 2
+*Mar 2 19:39:27.958: %SSH-5-ENABLED: SSH 1.99 has been enabled
+K-ENG-SW(config)#
+K-ENG-SW(config)#line vty 0
+K-ENG-SW(config-line)#transport input ssh
+K-ENG-SW(config-line)#login local
+K-ENG-SW(config-line)#exec-timeout 15
+K-ENG-SW(config-line)#exit
+K-ENG-SW(config)#
+K-ENG-SW(config)#service password-encryption
+K-ENG-SW(config)#
+K-ENG-SW(config)#do wr

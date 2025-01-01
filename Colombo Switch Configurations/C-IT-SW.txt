@@ -1,0 +1,73 @@
+Switch>ena
+Switch#conf t
+
+Switch(config)#ho C-IT-SW
+
+C-IT-SW(config)#vlan 10
+C-IT-SW(config-vlan)#name Management
+
+C-IT-SW(config-vlan)#vlan 20
+C-IT-SW(config-vlan)#name LAN
+
+C-IT-SW(config-vlan)#vlan 50
+C-IT-SW(config-vlan)#name WLAN
+C-IT-SW(config-vlan)#exit
+
+C-IT-SW(config)#int range fa0/1-2
+C-IT-SW(config-if-range)#switchport mode trunk
+C-IT-SW(config-if-range)#exit
+
+C-IT-SW(config)#int range fa0/3-20
+C-IT-SW(config-if-range)#switchport mode access 
+C-IT-SW(config-if-range)#switchport access vlan 20
+C-IT-SW(config-if-range)#exit
+
+C-IT-SW(config)#int range fa0/21-24
+C-IT-SW(config-if-range)#switchport mode access 
+C-IT-SW(config-if-range)#switchport access vlan 50
+C-IT-SW(config-if-range)#exit
+
+C-IT-SW(config)#int range gig 0/1-2
+C-IT-SW(config-if-range)#switchport mode access 
+C-IT-SW(config-if-range)#switchport access vlan 10
+C-IT-SW(config-if-range)#exit
+C-IT-SW(config)#
+
+C-IT-SW(config)#int range fa0/3-24
+C-IT-SW(config-if-range)#spanning-tree portfast
+C-IT-SW(config-if-range)#spanning-tree bpduguard enable 
+C-IT-SW(config-if-range)#exit
+
+C-IT-SW>ena
+C-IT-SW#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+C-IT-SW(config)#enable secret Admin
+C-IT-SW(config)#
+C-IT-SW(config)#line console 0
+C-IT-SW(config-line)#password Admin
+C-IT-SW(config-line)#exec-timeout 15
+C-IT-SW(config-line)#login
+C-IT-SW(config-line)#exit
+C-IT-SW(config)#
+C-IT-SW(config)#username Admin secret Admin
+C-IT-SW(config)#ip domain-name cisco.lk
+C-IT-SW(config)#crypto key generate rsa
+The name for the keys will be: C-IT-SW.cisco.lk
+Choose the size of the key modulus in the range of 360 to 4096 for your
+  General Purpose Keys. Choosing a key modulus greater than 512 may take
+  a few minutes.
+
+How many bits in the modulus [512]: 1024
+% Generating 1024 bit RSA keys, keys will be non-exportable...[OK]
+
+C-IT-SW(config)#ip ssh version 2
+*Mar 2 19:33:41.172: %SSH-5-ENABLED: SSH 1.99 has been enabled
+C-IT-SW(config)#
+C-IT-SW(config)#line vty 0
+C-IT-SW(config-line)#transport input ssh
+C-IT-SW(config-line)#login local
+C-IT-SW(config-line)#exec-timeout 15
+C-IT-SW(config-line)#exit
+C-IT-SW(config)#
+C-IT-SW(config)#service password-encryption
+C-IT-SW(config)#

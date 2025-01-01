@@ -1,0 +1,71 @@
+Switch>ena
+
+Switch#conf t
+
+Switch(config)#ho C-ENG-SW
+
+C-ENG-SW(config)#vlan 10
+C-ENG-SW(config-vlan)#name Management
+
+C-ENG-SW(config-vlan)#vlan 20
+C-ENG-SW(config-vlan)#name LAN
+
+C-ENG-SW(config-vlan)#vlan 50
+C-ENG-SW(config-vlan)#name WLAN
+C-ENG-SW(config-vlan)#exit
+
+C-ENG-SW(config)#int range fa0/1-2
+C-ENG-SW(config-if-range)#switchport mode trunk
+C-ENG-SW(config-if-range)#exit
+
+C-ENG-SW(config)#int range fa0/3-20
+C-ENG-SW(config-if-range)#switchport mode access 
+C-ENG-SW(config-if-range)#switchport access vlan 20
+C-ENG-SW(config-if-range)#exit
+
+C-ENG-SW(config)#int range fa0/21-24
+C-ENG-SW(config-if-range)#switchport mode access 
+C-ENG-SW(config-if-range)#switchport access vlan 50
+C-ENG-SW(config-if-range)#exit
+
+C-ENG-SW(config)#int range gig 0/1-2
+C-ENG-SW(config-if-range)#switchport mode access 
+C-ENG-SW(config-if-range)#switchport access vlan 199
+C-ENG-SW(config-if-range)#shut
+
+C-ENG-SW(config)#int range fa0/3-24
+C-ENG-SW(config-if-range)#spanning-tree portfast
+C-ENG-SW(config-if-range)#spanning-tree bpduguard enable 
+C-ENG-SW(config-if-range)#exit
+
+
+C-ENG-SW(config)#enable secret Admin
+C-ENG-SW(config)#
+C-ENG-SW(config)#line console 0
+C-ENG-SW(config-line)#password Admin
+C-ENG-SW(config-line)#exec-timeout 15
+C-ENG-SW(config-line)#login
+C-ENG-SW(config-line)#exit
+C-ENG-SW(config)#
+C-ENG-SW(config)#username Admin secret Admin
+C-ENG-SW(config)#ip domain-name cisco.lk
+C-ENG-SW(config)#crypto key generate rsa
+The name for the keys will be: C-ENG-SW.cisco.lk
+Choose the size of the key modulus in the range of 360 to 4096 for your
+  General Purpose Keys. Choosing a key modulus greater than 512 may take
+  a few minutes.
+
+How many bits in the modulus [512]: 1024
+% Generating 1024 bit RSA keys, keys will be non-exportable...[OK]
+
+C-ENG-SW(config)#ip ssh version 2
+*Mar 2 19:36:45.602: %SSH-5-ENABLED: SSH 1.99 has been enabled
+C-ENG-SW(config)#
+C-ENG-SW(config)#line vty 0
+C-ENG-SW(config-line)#transport input ssh
+C-ENG-SW(config-line)#login local
+C-ENG-SW(config-line)#exec-timeout 15
+C-ENG-SW(config-line)#exit
+C-ENG-SW(config)#
+C-ENG-SW(config)#service password-encryption
+C-ENG-SW(config)#

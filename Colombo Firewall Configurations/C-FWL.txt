@@ -1,0 +1,97 @@
+ciscoasa>ena
+
+Password: 
+ciscoasa#conf t
+
+ciscoasa(config)#ho C-FWL
+
+C-FWL(config)#int gig1/3
+C-FWL(config-if)#no shut
+C-FWL(config-if)#nameif INSIDE1
+C-FWL(config-if)#security-level 100
+C-FWL(config-if)#ip add 10.20.20.34 255.255.255.252
+C-FWL(config-if)#exit
+
+C-FWL(config)#int gig1/4
+C-FWL(config-if)#no shut
+C-FWL(config-if)#nameif INSIDE2
+C-FWL(config-if)#security-level 100
+C-FWL(config-if)#ip add 10.20.20.38 255.255.255.252
+C-FWL(config-if)#exit
+
+C-FWL(config)#int gig 1/2
+C-FWL(config-if)#no shut
+C-FWL(config-if)#nameif DMZ
+C-FWL(config-if)#security-level 70
+C-FWL(config-if)#ip address 10.20.20.1 255.255.255.224
+C-FWL(config-if)#exit
+
+C-FWL(config)#int gig 1/1
+C-FWL(config-if)#no shut
+C-FWL(config-if)#nameif OUTSIDE
+INFO: Security level for "OUTSIDE" set to 0 by default.
+C-FWL(config-if)#security-level 0
+C-FWL(config-if)#ip add 105.100.50.2 255.255.255.252
+C-FWL(config-if)#exit
+
+C-FWL(config)#do wr
+C-FWL(config)#wr mem
+
+C-FWL(config)#router ospf 15
+C-FWL(config-router)#router-id 9.1.9.1
+C-FWL(config-router)#network 105.100.50.0 255.255.255.252 area 0
+C-FWL(config-router)#network 10.20.20.32 255.255.255.252 area 0
+C-FWL(config-router)#network 10.20.20.36 255.255.255.252 area 0
+C-FWL(config-router)#network 10.20.20.0 255.255.255.224 area 0
+C-FWL(config-router)#exit
+
+C-FWL(config)#route OUTSIDE 0.0.0.0 0.0.0.0 105.100.50.1
+C-FWL(config)#object network INSIDE1-OUTSIDE
+C-FWL(config-network-object)#subnet 192.168.10.0 255.255.255.0
+C-FWL(config-network-object)#nat (INSIDE1,OUTSIDE) dynamic interface
+C-FWL(config-network-object)#ex
+
+C-FWL(config)#object network INSIDE1a-OUTSIDE
+C-FWL(config-network-object)#subnet 192.168.10.0 255.255.255.0
+C-FWL(config-network-object)#nat (INSIDE2,OUTSIDE) dynamic interface
+C-FWL(config-network-object)#ex
+
+C-FWL(config)#object network INSIDE2-OUTSIDE
+C-FWL(config-network-object)#subnet 172.16.0.0 255.255.0.0 
+C-FWL(config-network-object)#nat (INSIDE1,OUTSIDE) dynamic interface
+C-FWL(config-network-object)#exit
+
+C-FWL(config)#object network INSIDE2a-OUTSIDE
+C-FWL(config-network-object)#subnet 172.16.0.0 255.255.0.0
+C-FWL(config-network-object)#nat (INSIDE2,OUTSIDE) dynamic interface
+C-FWL(config-network-object)#exit
+
+C-FWL(config)#object network INSIDE3-OUTSIDE
+C-FWL(config-network-object)#subnet 10.10.0.0 255.255.0.0
+C-FWL(config-network-object)#nat (INSIDE1,OUTSIDE) dynamic interface
+C-FWL(config-network-object)#ex
+
+C-FWL(config)#object network INSIDE3a-OUTSIDE
+C-FWL(config-network-object)#subnet 10.10.0.0 255.255.0.0
+C-FWL(config-network-object)#nat (INSIDE2,OUTSIDE) dynamic interface
+C-FWL(config-network-object)#ex
+
+C-FWL(config)#access-list RES-ACCESS extended permit icmp any any
+C-FWL(config)#access-list RES-ACCESS extended permit udp any any eq 67
+C-FWL(config)#access-list RES-ACCESS extended permit udp any any eq 68
+C-FWL(config)#access-list RES-ACCESS extended permit udp any any eq 53
+C-FWL(config)#access-list RES-ACCESS extended permit tcp any any eq 53
+C-FWL(config)#access-list RES-ACCESS extended permit tcp any any eq 80
+C-FWL(config)#access-list RES-ACCESS extended permit tcp any any eq 25
+C-FWL(config)#access-list RES-ACCESS extended permit tcp any any eq 20
+C-FWL(config)#access-list RES-ACCESS extended permit tcp any any eq 21
+
+C-FWL(config)#access-group RES-ACCESS in interface DMZ 
+C-FWL(config)#access-group RES-ACCESS in interface OUTSIDE
+C-FWL(config)#wr mem
+
+C-FWL(config)#access-list RES-ACCESS extended permit udp any any eq 5246
+C-FWL(config)#access-list RES-ACCESS extended permit udp any any eq 5247
+C-FWL(config)#access-list RES-ACCESS extended permit udp any any eq 12222
+C-FWL(config)#access-list RES-ACCESS extended permit udp any any eq 12223
+C-FWL(config)#wr mem

@@ -1,0 +1,9 @@
+Switch>ena
+Switch#conf t
+
+Switch(config)#ho DMZ-SW
+
+DMZ-SW(config)#int range fa0/2-24
+DMZ-SW(config-if-range)#spanning-tree portfast
+DMZ-SW(config-if-range)#spanning-tree bpduguard enable
+DMZ-SW(config-if-range)#exit

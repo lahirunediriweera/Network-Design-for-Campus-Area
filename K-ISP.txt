@@ -1,0 +1,23 @@
+Router>ena
+
+Router#conf t
+
+Router(config)#ho K-ISP
+
+K-ISP(config)#interface gigabitEthernet 0/0/0
+K-ISP(config-if)#ip address 205.200.100.1 255.255.255.252
+K-ISP(config-if)#description K-FWL-Link
+K-ISP(config-if)#no shut
+K-ISP(config-if)#exit
+
+K-ISP(config)#interface serial 0/1/1
+K-ISP(config-if)#ip address 30.30.30.2 255.255.255.252
+K-ISP(config-if)#description ISP-Link
+K-ISP(config-if)#no shut
+K-ISP(config-if)#exit
+
+K-ISP(config)#router ospf 15
+K-ISP(config-router)#router-id 7.1.7.1
+K-ISP(config-router)#network 30.30.30.0 0.0.0.3 area 0
+K-ISP(config-router)#network 205.200.100.0 0.0.0.3 area 0
+K-ISP(config-router)#exit

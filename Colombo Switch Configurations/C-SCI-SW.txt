@@ -1,0 +1,68 @@
+Switch#conf t
+
+Switch(config)#ho C-SCI-SW
+
+C-SCI-SW(config)#vlan 10
+C-SCI-SW(config-vlan)#name Management
+
+C-SCI-SW(config-vlan)#vlan 20
+C-SCI-SW(config-vlan)#name LAN
+
+C-SCI-SW(config-vlan)#vlan 50
+C-SCI-SW(config-vlan)#name WLAN
+C-SCI-SW(config-vlan)#exit
+
+C-SCI-SW(config)#int range fa0/1-2
+C-SCI-SW(config-if-range)#switchport mode trunk
+C-SCI-SW(config-if-range)#exit
+
+C-SCI-SW(config)#int range fa0/3-20
+C-SCI-SW(config-if-range)#switchport mode access 
+C-SCI-SW(config-if-range)#switchport access vlan 20
+C-SCI-SW(config-if-range)#exit
+
+C-SCI-SW(config)#int range fa0/21-24
+C-SCI-SW(config-if-range)#switchport mode access 
+C-SCI-SW(config-if-range)#switchport access vlan 50
+C-SCI-SW(config-if-range)#exit
+
+C-SCI-SW(config)#int range gig 0/1-2
+C-SCI-SW(config-if-range)#switchport mode access 
+C-SCI-SW(config-if-range)#switchport access vlan 199
+C-SCI-SW(config-if-range)#shut
+
+C-SCI-SW(config)#int range fa0/3-24
+C-SCI-SW(config-if-range)#spanning-tree portfast
+C-SCI-SW(config-if-range)#spanning-tree bpduguard enable 
+C-SCI-SW(config-if-range)#exit
+
+C-SCI-SW(config)#enable secret Admin
+C-SCI-SW(config)#
+C-SCI-SW(config)#line console 0
+C-SCI-SW(config-line)#password Admin
+C-SCI-SW(config-line)#exec-timeout 15
+C-SCI-SW(config-line)#login
+C-SCI-SW(config-line)#exit
+C-SCI-SW(config)#
+C-SCI-SW(config)#username Admin secret Admin
+C-SCI-SW(config)#ip domain-name cisco.lk
+C-SCI-SW(config)#crypto key generate rsa
+The name for the keys will be: C-SCI-SW.cisco.lk
+Choose the size of the key modulus in the range of 360 to 4096 for your
+  General Purpose Keys. Choosing a key modulus greater than 512 may take
+  a few minutes.
+
+How many bits in the modulus [512]: 1024
+% Generating 1024 bit RSA keys, keys will be non-exportable...[OK]
+
+C-SCI-SW(config)#ip ssh version 2
+*Mar 2 19:37:13.955: %SSH-5-ENABLED: SSH 1.99 has been enabled
+C-SCI-SW(config)#
+C-SCI-SW(config)#line vty 0
+C-SCI-SW(config-line)#transport input ssh
+C-SCI-SW(config-line)#login local
+C-SCI-SW(config-line)#exec-timeout 15
+C-SCI-SW(config-line)#exit
+C-SCI-SW(config)#
+C-SCI-SW(config)#service password-encryption
+C-SCI-SW(config)#do wr

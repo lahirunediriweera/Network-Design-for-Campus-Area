@@ -1,0 +1,70 @@
+Switch>ena
+Switch#conf t
+
+Switch(config)#ho C-ART-SW
+
+C-ART-SW(config)#vlan 10
+C-ART-SW(config-vlan)#name Management
+
+C-ART-SW(config-vlan)#vlan 20
+C-ART-SW(config-vlan)#name LAN
+
+C-ART-SW(config-vlan)#vlan 50
+C-ART-SW(config-vlan)#name WLAN
+C-ART-SW(config-vlan)#exit
+
+C-ART-SW(config)#int range fa0/1-2
+C-ART-SW(config-if-range)#switchport mode trunk
+C-ART-SW(config-if-range)#exit
+
+C-ART-SW(config)#int range fa0/3-20
+C-ART-SW(config-if-range)#switchport mode access 
+C-ART-SW(config-if-range)#switchport access vlan 20
+C-ART-SW(config-if-range)#exit
+
+C-ART-SW(config)#int range fa0/21-24
+C-ART-SW(config-if-range)#switchport mode access 
+C-ART-SW(config-if-range)#switchport access vlan 50
+C-ART-SW(config-if-range)#exit
+
+C-ART-SW(config)#int range gig 0/1-2
+C-ART-SW(config-if-range)#switchport mode access 
+C-ART-SW(config-if-range)#switchport access vlan 199
+C-ART-SW(config-if-range)#shut
+
+C-ART-SW(config)#int range fa0/3-24
+C-ART-SW(config-if-range)#spanning-tree portfast
+C-ART-SW(config-if-range)#spanning-tree bpduguard enable 
+C-ART-SW(config-if-range)#exit
+
+C-ART-SW(config)#enable secret Admin
+C-ART-SW(config)#
+C-ART-SW(config)#line console 0
+C-ART-SW(config-line)#password Admin
+C-ART-SW(config-line)#exec-timeout 15
+C-ART-SW(config-line)#login
+C-ART-SW(config-line)#exit
+C-ART-SW(config)#
+C-ART-SW(config)#username Admin secret Admin
+C-ART-SW(config)#ip domain-name cisco.lk
+C-ART-SW(config)#crypto key generate rsa
+The name for the keys will be: C-ART-SW.cisco.lk
+Choose the size of the key modulus in the range of 360 to 4096 for your
+  General Purpose Keys. Choosing a key modulus greater than 512 may take
+  a few minutes.
+
+How many bits in the modulus [512]: 1024
+% Generating 1024 bit RSA keys, keys will be non-exportable...[OK]
+
+C-ART-SW(config)#ip ssh version 2
+*Mar 2 19:38:10.629: %SSH-5-ENABLED: SSH 1.99 has been enabled
+C-ART-SW(config)#
+C-ART-SW(config)#line vty 0
+C-ART-SW(config-line)#transport input ssh
+C-ART-SW(config-line)#login local
+C-ART-SW(config-line)#exec-timeout 15
+C-ART-SW(config-line)#exit
+C-ART-SW(config)#
+C-ART-SW(config)#service password-encryption
+C-ART-SW(config)#
+C-ART-SW(config)#do wr

@@ -1,0 +1,71 @@
+Switch>ena
+
+Switch#conf t
+
+Switch(config)#ho K-BUS-SW
+
+K-BUS-SW(config)#vlan 60
+K-BUS-SW(config-vlan)#name KLAN
+
+K-BUS-SW(config-vlan)#vlan 90
+K-BUS-SW(config-vlan)#name KWLAN
+
+K-BUS-SW(config-vlan)#vlan 199
+K-BUS-SW(config-vlan)#name BLACKHOLE
+K-BUS-SW(config-vlan)#exit
+
+K-BUS-SW(config)#int range fa0/1-2
+K-BUS-SW(config-if-range)#switchport mode trunk
+K-BUS-SW(config-if-range)#exit
+
+K-BUS-SW(config)#int range fa0/3-20
+K-BUS-SW(config-if-range)#switchport mode access 
+K-BUS-SW(config-if-range)#switchport access vlan 60
+K-BUS-SW(config-if-range)#exit
+
+K-BUS-SW(config)#int range fa0/21-24
+K-BUS-SW(config-if-range)#switchport mode access 
+K-BUS-SW(config-if-range)#switchport access vlan 90
+K-BUS-SW(config-if-range)#exit
+
+K-BUS-SW(config)#int range gig 0/1-2
+K-BUS-SW(config-if-range)#switchport mode access 
+K-BUS-SW(config-if-range)#switchport access vlan 199
+K-BUS-SW(config-if-range)#shut
+K-BUS-SW(config-if-range)#exit
+
+K-BUS-SW(config)#int range fa0/3-24
+K-BUS-SW(config-if-range)#spanning-tree portfast
+K-BUS-SW(config-if-range)#spanning-tree bpduguard enable 
+K-BUS-SW(config-if-range)#exit
+
+K-BUS-SW(config)#enable secret Admin
+K-BUS-SW(config)#
+K-BUS-SW(config)#line console 0
+K-BUS-SW(config-line)#password Admin
+K-BUS-SW(config-line)#exec-timeout 15
+K-BUS-SW(config-line)#login
+K-BUS-SW(config-line)#exit
+K-BUS-SW(config)#
+K-BUS-SW(config)#username Admin secret Admin
+K-BUS-SW(config)#ip domain-name cisco.lk
+K-BUS-SW(config)#crypto key generate rsa
+The name for the keys will be: K-BUS-SW.cisco.lk
+Choose the size of the key modulus in the range of 360 to 4096 for your
+  General Purpose Keys. Choosing a key modulus greater than 512 may take
+  a few minutes.
+
+How many bits in the modulus [512]: 1024
+% Generating 1024 bit RSA keys, keys will be non-exportable...[OK]
+
+K-BUS-SW(config)#ip ssh version 2
+*Mar 2 19:39:6.465: %SSH-5-ENABLED: SSH 1.99 has been enabled
+K-BUS-SW(config)#
+K-BUS-SW(config)#line vty 0
+K-BUS-SW(config-line)#transport input ssh
+K-BUS-SW(config-line)#login local
+K-BUS-SW(config-line)#exec-timeout 15
+K-BUS-SW(config-line)#exit
+K-BUS-SW(config)#
+K-BUS-SW(config)#service password-encryption
+K-BUS-SW(config)#do wr

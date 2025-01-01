@@ -1,0 +1,62 @@
+Switch>ena
+Switch#conf t
+
+Switch(config)#ho C-MLSW02
+
+C-MLSW02(config)#vlan 10
+C-MLSW02(config-vlan)#name Management
+
+C-MLSW02(config-vlan)#vlan 20
+C-MLSW02(config-vlan)#name LAN
+
+C-MLSW02(config-vlan)#vlan 50
+C-MLSW02(config-vlan)#name WLAN
+C-MLSW02(config-vlan)#exit
+
+C-MLSW02(config)#int range gig1/0/2-6
+C-MLSW02(config-if-range)#switchport mode trunk
+C-MLSW02(config-if-range)#exit
+
+C-MLSW02(config)#int range gig1/0/21-23
+C-MLSW02(config-if-range)#channel-group 1 mode passive
+C-MLSW02(config-if-range)#exit
+C-MLSW02(config)#interface Port-channel 1
+C-MLSW02(config-if)#switchport mode trunk
+C-MLSW02(config-if)#exit
+
+C-MLSW02(config)#ip routing
+C-MLSW02(config)#int gig1/0/1
+C-MLSW02(config-if)#no switchport
+C-MLSW02(config-if)#ip address 10.20.20.37 255.255.255.252
+C-MLSW02(config-if)#description C-FWL-Link
+C-MLSW02(config-if)#exit
+
+C-MLSW02(config)#router ospf 15
+C-MLSW02(config-router)#router-id 3.1.3.1
+C-MLSW02(config-router)#network 10.20.20.36 0.0.0.3 area 0
+C-MLSW02(config-router)#network 192.168.10.0 0.0.255.255 area 0
+C-MLSW02(config-router)#network 172.16.0.0 0.0.255.255 area 0
+C-MLSW02(config-router)#network 10.10.0.0 0.0.255.255 area 0
+C-MLSW02(config-router)#exit
+
+C-MLSW02(config)#int vlan 10
+C-MLSW02(config-if)#ip add 192.168.10.2 255.255.255.252
+C-MLSW02(config-if)#ip helper-address 10.20.20.5
+C-MLSW02(config-if)#ip helper-address 10.20.20.6
+C-MLSW02(config-if)#standby 10 ip 192.168.10.1
+C-MLSW02(config-if)#exit
+
+C-MLSW02(config)#int vlan 20
+C-MLSW02(config-if)#ip add 172.16.0.2 255.255.0.0
+C-MLSW02(config-if)#ip helper-address 10.20.20.6
+C-MLSW02(config-if)#ip helper-address 10.20.20.5
+C-MLSW02(config-if)#standby 20 ip 172.16.0.1
+C-MLSW02(config-if)#exit
+
+C-MLSW02(config)#int vlan 50
+C-MLSW02(config-if)#ip add 10.10.0.2 255.255.0.
+C-MLSW02(config-if)#ip helper-address 10.20.20.6
+C-MLSW02(config-if)#ip helper-address 10.20.20.5
+C-MLSW02(config-if)#standby 50 ip 10.10.0.1
+C-MLSW02(config-if)#exit
+

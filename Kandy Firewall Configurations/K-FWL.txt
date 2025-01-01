@@ -1,0 +1,118 @@
+ciscoasa>ena
+
+Password: 
+ciscoasa#conf t
+
+ciscoasa(config)#ho K-FWL
+
+K-FWL(config)#int gig 1/1
+K-FWL(config-if)#no shut
+K-FWL(config-if)#nameif OUTSIDE
+K-FWL(config-if)#security-level 0
+K-FWL(config-if)#ip add 205.200.100.2 255.255.255.252
+K-FWL(config-if)#exit
+
+K-FWL(config)#int gig 1/2
+K-FWL(config-if)#no shut
+K-FWL(config-if)#nameif INSIDE1
+K-FWL(config-if)#security-level 100
+K-FWL(config-if)#ip add 10.20.20.42 255.255.255.252
+K-FWL(config-if)#exit
+
+K-FWL(config)#int gig 1/3
+K-FWL(config-if)#no shut
+K-FWL(config-if)#nameif INSIDE2
+K-FWL(config-if)#security-level 100
+K-FWL(config-if)#ip add 10.20.20.46 255.255.255.252
+K-FWL(config-if)#exit
+K-FWL(config)#do wr
+K-FWL(config)#wr mem
+
+K-FWL(config)#router ospf 15
+K-FWL(config-router)#router-id 10.1.10.1
+K-FWL(config-router)#network 10.20.20.40 255.255.255.252 area 0
+K-FWL(config-router)#network 10.20.20.44 255.255.255.252 area 0
+K-FWL(config-router)#network 205.200.100.0 255.255.255.252 area 0
+K-FWL(config-router)#exit
+
+
+C-FWL(config)#route OUTSIDE 0.0.0.0 0.0.0.0 205.200.100.1
+K-FWL(config)#object network INSIDE1-OUTSIDE
+K-FWL(config-network-object)#subnet 10.11.0.0 255.255.0.0
+K-FWL(config-network-object)#nat (INSIDE1,OUTSIDE) dynamic interface
+K-FWL(config)#object network INSIDE1a-OUTSIDE
+K-FWL(config-network-object)#subnet 10.11.0.0 255.255.0.0
+K-FWL(config-network-object)#nat (INSIDE2,OUTSIDE) dynamic interface
+
+K-FWL(config)#object network INSIDE2-OUTSIDE
+K-FWL(config-network-object)#subnet 172.17.0.0 255.255.0.0
+K-FWL(config-network-object)#nat (INSIDE1,OUTSIDE) dynamic interface
+K-FWL(config)#object network INSIDE2a-OUTSIDE
+K-FWL(config-network-object)#subnet 172.17.0.0 255.255.0.0
+K-FWL(config-network-object)#nat (INSIDE2,OUTSIDE) dynamic interface
+ 
+K-FWL(config)#access-list RES-ACCESS extended permit icmp any any
+K-FWL(config)#access-list RES-ACCESS extended permit udp any any eq 67
+K-FWL(config)#access-list RES-ACCESS extended permit udp any any eq 68
+K-FWL(config)#access-list RES-ACCESS extended permit udp any any eq 53
+K-FWL(config)#access-list RES-ACCESS extended permit tcp any any eq 53
+K-FWL(config)#access-list RES-ACCESS extended permit tcp any any eq 80
+K-FWL(config)#access-list RES-ACCESS extended permit tcp any any eq 25
+K-FWL(config)#access-list RES-ACCESS extended permit tcp any any eq 20
+K-FWL(config)#access-list RES-ACCESS extended permit tcp any any eq 21
+K-FWL(config)#access-group RES-ACCESS in interface OUTSIDE
+K-FWL(config)#wr mem
+
+K-FWL(config)#crypto ikev1 policy 10
+K-FWL(config-ikev1-policy)#
+K-FWL(config-ikev1-policy)#hash sha
+K-FWL(config-ikev1-policy)#
+K-FWL(config-ikev1-policy)#authentication pre-share
+K-FWL(config-ikev1-policy)#
+K-FWL(config-ikev1-policy)#group 2 
+K-FWL(config-ikev1-policy)#lifetime 86400
+K-FWL(config-ikev1-policy)#encryption 3des
+K-FWL(config-ikev1-policy)#
+K-FWL(config-ikev1-policy)#exit
+K-FWL(config)#
+K-FWL(config)#tunnel-group 105.100.50.2 type IPsec-l2l
+WARNING: L2L tunnel-groups that have names which are not an IP
+address may only be used if the tunnel authentication
+method is Digital Certificates and/or The peer is
+configured to use Aggressive Mode
+K-FWL(config)#tunnel-group 105.100.50.2 IPsec-attributes 
+K-FWL(config-tunnel-ipsec)#ikev1 pre-shared-key cisco
+K-FWL(config-tunnel-ipsec)#
+K-FWL(config-tunnel-ipsec)#crypto ipsec ikev1 transform-set TSET esp-3des esp-sha-hmac
+K-FWL(config)#
+K-FWL(config)#access-list VPN-ACL permit ip 172.17.0.0 255.255.0.0 192.168.10.0 255.255.255.0 
+K-FWL(config)#access-list VPN-ACL permit ip 10.11.0.0 255.255.0.0 192.168.10.0 255.255.255.0 
+K-FWL(config)#
+K-FWL(config)#access-list VPN-ACL permit ip 172.17.0.0 255.255.0.0 172.16.0.0 255.255.0.0
+K-FWL(config)#access-list VPN-ACL permit ip 10.11.0.0 255.255.0.0 172.16.0.0 255.255.0.0
+K-FWL(config)#
+K-FWL(config)#access-list VPN-ACL permit ip 172.17.0.0 255.255.0.0 10.10.0.0 255.255.0.0
+K-FWL(config)#access-list VPN-ACL permit ip 10.11.0.0 255.255.0.0 10.10.0.0 255.255.0.0
+K-FWL(config)#
+K-FWL(config)#access-list VPN-ACL permit ip 172.17.0.0 255.255.0.0 10.20.20.0 255.255.255.224
+K-FWL(config)#access-list VPN-ACL permit ip 10.11.0.0 255.255.0.0 10.20.20.0 255.255.255.224
+K-FWL(config)#
+K-FWL(config)#
+K-FWL(config)#crypto map CMAP 10 set peer 105.100.50.2
+K-FWL(config)#
+K-FWL(config)#crypto map CMAP 10 set ikev1 transform-set TSET
+K-FWL(config)#
+K-FWL(config)#crypto map CMAP 10 match address VPN-ACL
+K-FWL(config)#
+K-FWL(config)#
+K-FWL(config)#crypto map CMAP interface OUTSIDE
+WARNING: crypto map has incomplete entries
+K-FWL(config)#crypto ikev1 enable OUTSIDE
+K-FWL(config)#
+K-FWL(config)#wr mem
+Building configuration...
+Cryptochecksum: 225a451f 29e20394 510041e4 69af311d
+
+3484  bytes copied in 2.96 secs (1177 bytes/sec)
+[OK]
+K-FWL(config)#
